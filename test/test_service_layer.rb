@@ -1,11 +1,13 @@
-require 'minitest_helper'
+require_relative 'minitest_helper'
 
-class TestServiceLayer < MiniTest::Unit::TestCase
-  def test_that_it_has_a_version_number
-    refute_nil ::ServiceLayer::VERSION
-  end
+describe String do
+  describe "underscore" do
+    it "should not modify all lower case words" do
+      "test".underscore.must_equal("test")
+    end
 
-  def test_it_does_something_useful
-    assert false
+    it "should converte camelcase to underscored lower case words" do
+      "UnitTest".underscore.must_equal("unit_test")
+    end
   end
 end

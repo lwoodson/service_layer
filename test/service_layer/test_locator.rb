@@ -26,4 +26,15 @@ describe ServiceLayer::Locator do
       lambda {subject.lookup(:foo)}.must_raise(ServiceLayer::NotFoundError)
     end
   end
+
+  describe "#registered?" do
+    it "should return true if a service is registered with a given key" do
+      subject.register(:bar, Array)
+      subject.registered?(:bar).must_equal(true) 
+    end
+
+    it "should return false if a service is not registered with a given key" do
+      subject.registered?(:baz).must_equal(false)
+    end
+  end
 end

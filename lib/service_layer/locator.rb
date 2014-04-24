@@ -30,6 +30,12 @@ module ServiceLayer
       end
 
       ##
+      # True if the key is registered to a service or false otherwise.
+      def registered?(key)
+        @services.key?(key.to_sym)
+      end
+
+      ##
       # Resets the service locator map.
       def reset!
         @services.clear
