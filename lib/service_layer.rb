@@ -2,6 +2,7 @@ require "service_layer/version"
 require "service_layer/locator"
 require "service_layer/dependent"
 require "service_layer/service"
+require "service_layer/railtie" if defined?(Rails)
 
 class String
   def underscore
