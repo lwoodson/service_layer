@@ -14,4 +14,17 @@ class String
 end
 
 module ServiceLayer
+  def self.collect_services!
+    if defined?(Services)
+      Services.constants.each do |klass|
+        if klass.to_s.end_with?("Service")
+          service_class = Services.const_get(klass)
+          Locator.register(klass.to_s.underscore, service_class)
+        end
+      end
+      true
+    else
+      false
+    end
+  end
 end

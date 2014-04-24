@@ -18,6 +18,12 @@ module ServiceLayer
       end
 
       ##
+      # Returns the keys for all the registered services
+      def services
+        @services.keys
+      end
+
+      ##
       # Looks up a service klass and instantiates it.
       def lookup(key, *args)
         service = @services[key.to_sym]

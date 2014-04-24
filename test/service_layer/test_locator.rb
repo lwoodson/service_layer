@@ -37,4 +37,22 @@ describe ServiceLayer::Locator do
       subject.registered?(:baz).must_equal(false)
     end
   end
+
+  describe "#services" do
+    it "should return an empty array if there are no services" do
+      subject.services.must_equal([])
+    end
+
+    it "should return array of keys if there are services" do
+      subject.register(:foo, Array)
+      subject.register(:bar, Array)
+      subject.services.must_equal([:foo, :bar])
+    end
+
+    it "should return no duplicate keys" do
+      subject.register(:foo, Array)
+      subject.register(:foo, Array)
+      subject.services.must_equal([:foo])
+    end
+  end
 end
