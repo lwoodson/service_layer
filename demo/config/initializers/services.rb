@@ -6,5 +6,10 @@ end
 # Collect all services defined in the Service module namespace
 ServiceLayer.collect_services!
 
-# You can register services explicitly here as follows:
-# ServiceLayer::Locator.register(:foo, Object)
+ServiceLayer.mappings do
+  snippet_providers = [
+    service(:github_service),
+    service(:js_fiddle_service)
+  ]
+  map(:snippet_providers, snippet_providers)
+end
