@@ -2,6 +2,7 @@ require "service_layer/version"
 require "service_layer/locator"
 require "service_layer/dependent"
 require "service_layer/service"
+require "service_layer/dsl"
 require "service_layer/railtie" if defined?(Rails)
 
 class String
@@ -27,5 +28,10 @@ module ServiceLayer
     else
       false
     end
+  end
+
+  def self.mappings(&block)
+    dsl = DSL.new
+    dsl.instance_exec(&block)
   end
 end

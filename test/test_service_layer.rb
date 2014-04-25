@@ -35,6 +35,23 @@ describe ServiceLayer do
       ServiceLayer::Locator.services.wont_include(:foo)
     end
   end
+
+  describe "#mappings" do
+    it "should allow mapping of service using map DSL keyword" do
+      ServiceLayer.mappings do
+        map :foo, Object
+      end
+      ServiceLayer::Locator.services.must_include(:foo)
+    end
+
+    it "should allow reference to other services using service DSL keyword" do
+      ServiceLayer.mappings do
+        map :foo, Object.new
+        map :bar, service(:foo) 
+      end
+      ServiceLayer::Locator.lookup(:foo).must_equal(ServiceLayer::Locator.lookup(:bar))
+    end
+  end
 end
 
 describe String do
