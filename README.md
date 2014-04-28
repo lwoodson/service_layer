@@ -138,7 +138,17 @@ ServiceLayer.mappings do
 end
 ```
 
-In this case, ```snippet_providers``` is an array containing the github_service and the js_fiddle_service.  This allows for a pluggable aspect to service composition where that makes sense.
+In this case, ```snippet_providers``` is an array containing the github_service and the js_fiddle_service.  This allows for a pluggable aspect to service composition where that makes sense.  You can examine this using a rails console from the demo project.
+
+```
+lwoodson@dev:~/service_layer/demo$ bundle exec rails c
+Loading development environment (Rails 4.1.0)
+2.1.1 :001 > sps = ServiceLayer::Locator.lookup(:snippet_providers)
+ => [#<Services::GithubService:0x00000000cf3af0 @options={:headers=>{"User-Agent"=>"service_layer demo"}}>, #<Services::JSFiddleService:0x00000000cf36b8>]
+
+2.1.1 :002 > sps.map{|sp| sp.source}
+ => ["GitHub", "JSFiddle"]
+```
 
 ## Inter-Service Dependencies
 Services can be dependent on other services, you simply need to have them extend ServiceLayer::Dependent and declare its dependencies.
