@@ -32,14 +32,42 @@ First you must initialize the service layer:
 
 Then you can create services as so:
 
-    rails generate service_layer:service fulfillment
+    rails generate service_layer:service github
 
-At this point you can open the service at app/services/fulfillment_service.rb and modify its content as appropriate
+At this point you can open the service at app/services/github_service.rb and modify its content as appropriate
 
 ```ruby
 module Services
-  class FulfillmentService
+  class GithubService
     # TODO implement me
+  end
+end
+```
+
+In the demo app, we implement this as so:
+
+```ruby
+module Services
+  class GithubService
+    include HTTParty
+    base_uri 'https://api.github.com:443'
+    format :json
+
+    def initialize
+      @options = {headers: {'User-Agent' => 'service_layer demo'}}
+    end
+
+    def source
+      "GitHub"
+    end
+
+    def gists(username)
+      self.class.get("/users/#{username}/gists", @options)
+    end
+
+    def number_of_snippets(username)
+      gists(username).size
+    end
   end
 end
 ```
@@ -48,16 +76,116 @@ After which the rest of your app can declare their dependence on services using 
 its ```services``` macro:
 
 ```ruby
-class OrderService < ActiveRecord::Base
+class CollaboratesWithService
   extend ServiceLayer::Dependent
-  services :billing_service, :fulfillment_service
+  services :github_service
 
-  def finish(order)
-    billing_service.bill_for(order)
-    fulfillment_service.fulfill(order)
-    order.update_attributes!(status: 'FINISHED')
+  def test_connection
+    !!github_service.gists('lwoodson')
   end
 end
+```
+
+This collaborator can use the service it is dependent on however it sees fit.  To see this at work, cd into the demo directory and
+run a rails console.
+
+```
+2.1.1 :001 > CollaboratesWithService.new.test_connection
+ => true
+```
+
+## Service Mappings
+Services are automagically mapped to their underscored class name as long as they are in the Services module namespace, as the following class in the demo app shows:
+
+```ruby
+module Services
+  class JSFiddleService
+    include HTTParty
+    base_uri 'http://jsfiddle.net/api'
+
+    def source
+      "JSFiddle"
+    end
+
+    def fiddles(username)
+      response = self.class.get("/user/#{username}/demo/list.json")
+      JSON.parse(response.body)
+    end
+
+    def number_of_snippets(username)
+      fiddles(username).size
+    end
+  end
+end
+```
+
+```
+lwoodson@dev:~/service_layer/demo$ bundle exec rails c
+Loading development environment (Rails 4.1.0)
+2.1.1 :001 > ServiceLayer::Locator.lookup(:js_fiddle_service)
+ => #<Services::JSFiddleService:0x0000000598a2b0>
+```
+
+Services can be any object, however, and explictly mapped to a key as shown here (from demo/config/initializers/services.rb)
+
+```
+ServiceLayer.mappings do
+  snippet_providers = [
+    service(:github_service),
+    service(:js_fiddle_service)
+  ]
+  map(:snippet_providers, snippet_providers)
+end
+```
+
+In this case, ```snippet_providers``` is an array containing the github_service and the js_fiddle_service.  This allows for a pluggable aspect to service composition where that makes sense.
+
+## Inter-Service Dependencies
+Services can be dependent on other services, you simply need to have them extend ServiceLayer::Dependent and declare its dependencies.
+
+```ruby
+module Services
+  class SnippetsService
+    extend ServiceLayer::Dependent
+    services :snippet_providers
+
+    def sources
+      snippet_providers.map{|provider| provider.source}
+    end
+
+    def provider(source)
+      snippet_providers.detect{|provider| provider.source == source}
+    end
+
+    def count(user, source="*")
+      if source == "*"
+        providers = snippet_providers
+      else
+        providers = [provider(source)]
+      end
+
+      providers.inject(0) do |result, provider|
+        username = user.provider_account_data[provider.source]
+        result += provider.number_of_snippets(username)
+      end
+    end
+  end
+end
+```
+
+You can test this from the demo app rails console:
+
+```
+lwoodson@dev:~/service_layer/demo$ bundle exec rails c
+Loading development environment (Rails 4.1.0)
+2.1.1 :001 > user = User.new provider_account_data: {"GitHub" => "lwoodson", "JSFiddle" => "lwoodson"}
+ => #<User id: nil, name: nil, provider_account_data: {"GitHub"=>"lwoodson", "JSFiddle"=>"lwoodson"}, created_at: nil, updated_at: nil>
+
+2.1.1 :002 > svc = Services::SnippetsService.new
+ => #<Services::SnippetsService:0x00000005527600>
+
+2.1.1 :003 > svc.count(user)
+ => 13
 ```
 ## Conventions
 
@@ -72,9 +200,6 @@ Here are the opinionated conventions:
 ```ruby
   fulfillment_service(1, 2, 3)
 ```
-
-## More examples
-The can be found in the demo rails project.
 
 ## Contributing
 
