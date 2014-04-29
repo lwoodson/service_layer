@@ -151,7 +151,7 @@ Loading development environment (Rails 4.1.0)
 ```
 
 ## Inter-Service Dependencies
-Services can be dependent on other services, you simply need to have them extend ServiceLayer::Dependent and declare its dependencies.
+Services can be dependent on other services, you simply need to have them extend ```ServiceLayer::Dependent``` and declare dependencies using the ```services ``` macro in the original example.
 
 ```ruby
 module Services
