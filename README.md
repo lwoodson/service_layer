@@ -24,7 +24,7 @@ Or install it yourself as:
 
     $ gem install service_layer
 
-## Usage
+## Basic Usage
 
 First you must initialize the service layer:
 
