@@ -151,7 +151,7 @@ Loading development environment (Rails 4.1.0)
 ```
 
 ## Inter-Service Dependencies
-Services can be dependent on other services, you simply need to have them extend ```ServiceLayer::Dependent``` and declare dependencies using the ```services ``` macro in the original example.
+Services can be dependent on other services, you simply need to have them extend ```ServiceLayer::Dependent``` and declare dependencies using the ```services ``` macro as in the original example.
 
 ```ruby
 module Services
@@ -203,6 +203,7 @@ Here are the opinionated conventions:
 
 * Services should live in app/services.
 * Services should be named "WhateverService"
+* Services should be auto-discovered if they are defined within the ```Services``` namespace.
 * Services should be registered for future access using the underscored class name.  "WhateverService" becomes a key :whatever_service.
 * Dependents on services must declare the services they will need for their operation using the ```services``` macro in ```ServiceLayer::Dependent```
 * Services can be initialized with arguments to their accessors in dependent classes.  For example, a service accessor invoked as ```fulfillment_service(1,2,3)``` will instantiate the service class and pass 1, 2 and 3 as args to its constructor.
